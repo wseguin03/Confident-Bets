@@ -1,0 +1,11 @@
+services:
+  # ...keep existing 'backend' service
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432 # enables connecting locally via psql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: nba_stats

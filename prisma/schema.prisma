@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}model PlayerStats {
+  Rk                Int
+  Player            String
+  Pos               String
+  Age               Int
+  Tm                String
+  G                 Int
+  GS                Int
+  MP                Float
+  FG                Float
+  FGA               Float
+  FG_Percentage     Float?
+  ThreeP            Float
+  ThreePA           Float
+  ThreeP_Percentage Float?
+  TwoP              Float
+  TwoPA             Float
+  TwoP_Percentage   Float?
+  eFG_Percentage    Float?
+  FT                Float
+  FTA               Float
+  FT_Percentage     Float?
+  ORB               Float
+  DRB               Float
+  TRB               Float
+  AST               Float
+  STL               Float
+  BLK               Float
+  TOV               Float
+  PF                Float
+  PTS               Float
+  YEAR              Int
+  @@id([Rk, Player, Tm, YEAR])
+  @@map("PlayerStats")
+}

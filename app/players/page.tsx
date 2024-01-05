@@ -1,61 +1,51 @@
-// app/players/page.tsx
-'use client'; // Marking the parent component as a client component
 
-import { useState, useEffect } from 'react';
-import { Card, CardGroup, Container, Row, Col, Form } from 'react-bootstrap';
-import Navbar from '../../components/Navbar';
-import { prisma } from "@/lib/prisma";
+// // import { useState, useEffect } from 'react';
+// // import { Card, CardGroup, Container, Row, Col, Form } from 'react-bootstrap';
+// // import Navbar from '../../components/Navbar';
+// // import { prisma } from "@/lib/prisma";
 
-export default function Players() {
+import { prisma } from "@/lib/prisma"
+import { GetServerSideProps, InferGetServerSidePropsType } from "next"
+import { Infer } from "next/dist/compiled/superstruct"
 
-  return (
-    <client>
-      <PlayersClient />
-    </client>
-  );
-}
+// // export default async function Homer() {
+// //   const players = await prisma.playerStats.findMany({
+// //     where : {
+// //       Player: "Precious Achiuwa"
+// //     }
+// //   });
 
-function PlayersClient() {
-  const [year, setYear] = useState(2024);
-  const [players, setPlayers] = useState([]);
+// // return (
+// //   <div>
+// //     <Navbar />
+// //     {players.map((player, index) => (
+// //       <div key={index}>
+// //         <p>{player.Player}</p>
+// //         <p>{player.Pos}</p>
+// //         {/* Add more fields as needed */}
+// //       </div>
+// //     ))}  
+// //   </div>
+// // );
 
-  const fetchPlayers = async () => {
-    const players = await prisma.PlayerStats.findMany({
-      where: {
-        year: year
-      }
-    });
-    setPlayers(players);
-  };
+// type Props = InferGetServerSidePropsType<typeof getServerSideProps>
+// export default function Players(){
+//   return (
+//     <div>
+//       <h1>Players</h1>
+//     </div>
+//   )
+// }
 
-  useEffect(() => {
-    fetchPlayers();
-  }, [year]);
-
-  return (
-    <>
-      <Navbar />
-      <Container>
-        <Form.Control as="select" value={year} onChange={e => setYear(e.target.value)}>
-          {[...Array(10).keys()].map(i => (
-            <option key={i} value={2015 + i}>{2015 + i}</option>
-          ))}
-        </Form.Control>
-        <Row>
-          {players.map((player, index) => (
-            <Col md={2} key={index}>
-              <CardGroup>
-                <Card>
-                  <Card.Body>
-                    <Card.Title>{player.Player}</Card.Title>
-                    <Card.Text>{player.Pos}</Card.Text>
-                  </Card.Body>
-                </Card>
-              </CardGroup>
-            </Col>
-          ))}
-        </Row>
-      </Container>
-    </>
-  );
-}
+// export const getServerSideProps: GetServerSideProps= async (context) => {
+//   const players = await prisma.playerStats.findMany({
+//     where : {
+//       Player: "Precious Achiuwa"
+//     }
+//   })
+//   return {
+//     props: {
+//       players,
+//     },
+//   }
+// }

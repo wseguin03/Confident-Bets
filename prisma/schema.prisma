@@ -1,6 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// npx prisma migrate dev --name (name of migration)
 generator client {
   provider = "prisma-client-js"
 }
@@ -42,4 +42,11 @@ datasource db {
   YEAR              Int
   @@id([Rk, Player, Tm, YEAR])
   @@map("PlayerStats")
+}
+
+model PlayerPhotos {
+  id     Int    @id @default(autoincrement())
+  player String
+  url    String
+  @@map("PlayerPhotos")
 }

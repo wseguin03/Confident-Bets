@@ -1,4 +1,4 @@
-import { Form, Card, Row, Col, Container, Image, Dropdown } from 'react-bootstrap';
+import { Form, Card, Row, Col, Container, Accordion } from 'react-bootstrap';
 import { prisma } from "@/lib/prisma"
 import { GetServerSideProps, InferGetServerSidePropsType } from "next"
 import Navbar from '@/components/Navbar';
@@ -6,49 +6,64 @@ import { useState } from 'react';
 
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>
 
-export default function Players({players}: Props){
+export default function Players({ players }: Props) {
   const [selectedYear, setSelectedYear] = useState('2024');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredPlayers = selectedYear ? players.filter(player => player.YEAR === parseInt(selectedYear)) : players;
+  const filteredPlayers = players.filter(player =>
+    player.YEAR === parseInt(selectedYear) && player.Player.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <>
-      <Navbar/>
-      <Row><br></br></Row>
-
+      <Navbar />
       <Container>
         <h1>Players:</h1>
         <Row>
-          <Form.Select value = {selectedYear} aria-label="Select Year" onChange={(e) => setSelectedYear(e.target.value)}>
-            <option>Select Year</option>
-            {[...Array(10)].map((_, i) => (
-              <option key={i} value={2015 + i}>{2015 + i}</option>
-            ))}
-          </Form.Select>
+          <Col>
+            <Form.Select aria-label="Select Year" onChange={(e) => setSelectedYear(e.target.value)} value={selectedYear}>
+              <option>Select Year</option>
+              {[...Array(10)].map((_, i) => (
+                <option key={i} value={2015 + i}>{2015 + i}</option>
+              ))}
+            </Form.Select>
+          </Col>
+          <Col>
+            <Form.Control type="text" placeholder="Search" onChange={(e) => setSearchTerm(e.target.value)} />
+          </Col>
         </Row>
         <Row><br></br></Row>
-        <Row xs={1} md={5} className="g-4">
-          {filteredPlayers.map((player, index) => (
-            <Col key={index}>
-              <Card>
-                <Card.Body>
-                  <Card.Title>{player.Player}</Card.Title>
-                  {/* <Image src="https://via.placeholder.com/150" alt={player.Player} /> */}
-                  <Card.Text>
-                    Average Points: {player.PTS}
-                    {/* Add more player details here */}
-                  </Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+        <Accordion>
+          <Row xs={1} md={4} className="g-4">
+              {filteredPlayers.map((player, index) => (
+                <Col key={index}>
+                  <Card>
+                    <Accordion.Item eventKey={index.toString()}>
+                      <Accordion.Header>
+                        {player.Player}
+                      </Accordion.Header>
+                      <Accordion.Body>
+                        Position: {player.Pos}<br />
+                        Age: {player.Age}<br />
+                        Team: {player.Tm}<br />
+                        Games: {player.G}<br />
+                        Games Started: {player.GS}<br />
+                        Minutes Played: {player.MP}<br />
+                        Field Goals: {player.FG}
+                        {/* Add more player details here */}
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Card>
+                </Col>
+              ))}
+          </Row>
+        </Accordion>
       </Container>
     </>
   )
 }
 
-export const getServerSideProps: GetServerSideProps= async (context) => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
   const players = await prisma.playerStats.findMany()
   return {
     props: {

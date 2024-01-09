@@ -36,7 +36,7 @@ export default function Players({ players }: Props) {
           </Col>
         </Row>
         <Row><br></br></Row>
-        <Accordion>
+        <Accordion key={searchTerm}>
           <Row xs={1} md={4} className="g-4">
             {filteredPlayers.map((player, index) => (
               <Col key={index}>
@@ -48,7 +48,7 @@ export default function Players({ players }: Props) {
                     </Accordion.Header>
                     <Accordion.Body>
                       Position: {player.Pos}<br />
-                      Age: {player.Age}<br />
+                      PTS: {player.PTS}<br />
                       Team: {player.Tm}<br />
                       Games: {player.G}<br />
                       Games Started: {player.GS}<br />
@@ -72,7 +72,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const playersWithPhotos = await Promise.all(players.map(async player => {
     const photo = await prisma.playerPhotos.findFirst({
       where: {
-        player: player.Player,
+        player: {
+          contains: player.Player,
+        },
       },
     });
 

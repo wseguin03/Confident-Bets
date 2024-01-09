@@ -13,7 +13,18 @@ export default function Players({ players }: Props) {
   const filteredPlayers = players.filter(player =>
     player.YEAR === parseInt(selectedYear) && player.Player.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const [sortType, setSortType] = useState('');
 
+  const sortPlayers = (players) => {
+    switch (sortType) {
+      case 'Rk':
+        return [...players].sort((a, b) => a.Rk - b.Rk);
+      case 'PTS':
+        return [...players].sort((a, b) => b.PTS - a.PTS);
+      default:
+        return players;
+    }
+  };
   return (
     <>
       <Navbar />
@@ -34,11 +45,18 @@ export default function Players({ players }: Props) {
           <Col>
             <Form.Control type="text" placeholder="Search" onChange={(e) => setSearchTerm(e.target.value)} />
           </Col>
+          <Col>
+            <Form.Select aria-label="Sort By" onChange={(e) => setSortType(e.target.value)}>
+              <option value="">Sort By</option>
+              <option value="Rk">Season Rank</option>
+              <option value="PTS">Average PTS</option>
+            </Form.Select>
+          </Col>
         </Row>
         <Row><br></br></Row>
         <Accordion key={searchTerm}>
           <Row xs={1} md={4} className="g-4">
-            {filteredPlayers.map((player, index) => (
+            {sortPlayers(filteredPlayers).map((player, index) => (
               <Col key={index}>
                 <Card>
                   <Accordion.Item eventKey={index.toString()}>

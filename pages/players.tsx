@@ -1,14 +1,16 @@
-import { Form, Card, Row, Col, Container, Accordion } from 'react-bootstrap';
+import { Form, Card, Row, Col, Container, Accordion, Button } from 'react-bootstrap';
 import { prisma } from "@/lib/prisma"
 import { GetServerSideProps, InferGetServerSidePropsType } from "next"
 import Navbar from '@/components/Navbar';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>
 
 export default function Players({ players }: Props) {
   const [selectedYear, setSelectedYear] = useState('2024');
   const [searchTerm, setSearchTerm] = useState('');
+  const router = useRouter();
 
   const filteredPlayers = players.filter(player =>
     player.YEAR === parseInt(selectedYear) && player.Player.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,6 +75,10 @@ export default function Players({ players }: Props) {
                       Minutes Played: {player.MP}<br />
                       Field Goals: {player.FG}
                       {/* Add more player details here */}
+                      <br />
+                      <Button variant="primary" onClick={() => router.push(`/bets?player=${player.Player}`)}>
+                        Place Bet
+                      </Button>
                     </Accordion.Body>
                   </Accordion.Item>
                 </Card>

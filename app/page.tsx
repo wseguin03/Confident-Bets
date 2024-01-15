@@ -12,7 +12,7 @@ export default function Home() {
             <div className="text-center p-5 border bg-white">
               <h1 className="mb-4">Welcome to NBA-Central</h1>
               <p className="mb-4">Gain Information on bets before placing them</p>
-              <Button href='/player' variant="primary">Start here</Button>
+              <Button href='/players' variant="primary">Start here</Button>
             </div>
           </Col>
         </Row>

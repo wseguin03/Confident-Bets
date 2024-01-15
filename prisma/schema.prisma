@@ -50,3 +50,35 @@ model PlayerPhotos {
   url    String
   @@map("PlayerPhotos")
 }
+
+model GameStats {
+  id        Int      @id @default(autoincrement())
+  PLAYER    String
+  TEAM      String
+  MATCH_UP  String? 
+  GAME_DATE DateTime?
+  WL        String? 
+  MIN       Float?  
+  PTS       Float?  
+  FGM       Float?  
+  FGA       Float?  
+  FG        Float?  
+  PM3       Float?  
+  PA3       Float?  
+  P3        Float?  
+  FTM       Float?  
+  FTA       Float?  
+  FT        Float?  
+  OREB      Float?  
+  DREB      Float?  
+  REB       Float?  
+  AST       Float?  
+  STL       Float?  
+  BLK       Float?  
+  TOV       Float?  
+  PF        Float?  
+  PLUS_MINUS Float?  
+  FP        Float?  
+
+  @@map("GameStats")
+}

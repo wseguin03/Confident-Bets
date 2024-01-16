@@ -1,6 +1,6 @@
 import Navbar from '@/components/Navbar'
 import React from 'react'
-import { Form, Button, Container, Row } from 'react-bootstrap'
+import { Form, Button, Container, Row, Table } from 'react-bootstrap'
 import { useRouter } from 'next/router'
 import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { prisma } from '@/lib/prisma'
@@ -26,15 +26,7 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
     const [resLengthPlayer , setResLengthPlayer] = useState(0);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [resLengthPlayerTeam , setResLengthPlayerTeam] = useState(0);
-    const defaultOptions = teams.map(team => ({
-        value: team,
-        label: team,
-      }));
-
-      const handleInputChange = (newValue) => {
-        const inputValue = newValue.replace(/\W/g, '');
-        return inputValue;
-      };
+    const defaultOptions = [{ label: 'Select a team', value: '' }, ...teams.map(team => ({ label: team, value: team }))];
     useEffect(() => {
         const playerStats = filteredGameStats.filter(stat => stat.PLAYER === playerName);
         setResLength(playerStats.length);
@@ -63,7 +55,9 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
                     case 'under':
                         if (stat.PLAYER == playerName) {
                             count+=1;
-
+                        }
+                        if(stat.MATCH_UP == opposingTeam && stat.PLAYER == playerName) {
+                            teamCount+=1;
                         }
                         return stat.PLAYER == playerName &&
                                      stat.TEAM == selectedTeam &&
@@ -165,17 +159,51 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
                     </Form.Group>
                     <Button type="submit">Calculate</Button>
                     <Row><br></br></Row>
+
+
                     {isSubmitted && ( 
                         <div>
                             <h2>Results</h2>
 
                             {opposingTeam !== '' ? (
                                 <p>{playerName} has played {resLengthPlayerTeam} games this season against {opposingTeam} and done this in {resLength} of them ({resLength} / {resLengthPlayerTeam})</p>
-                                ) : (
+                            ) : (
                                 <p>{playerName} has played {resLengthPlayer} games this season and done this in {resLength} of them ({resLength} / {resLengthPlayer})</p>
-                                )}
+                            )}
+
+                            <Table striped bordered hover>
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Team</th>
+                                        <th>Match Up</th>
+                                        <th>Points</th>
+                                        <th>Rebounds</th>
+                                        <th>Assists</th>
+                                        {/* Add more columns as needed */}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredGameStats.map((stat, index) => (
+                                        <tr key={index}>
+                                            <td>{stat.PLAYER}</td>
+                                            <td>{stat.TEAM}</td>
+                                            <td>{stat.MATCH_UP}</td>
+                                            <td>{stat.PTS}</td>
+                                            <td>{stat.REB}</td>
+                                            <td>{stat.AST}</td>
+
+                                            {/* Add more cells as needed */}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </Table>
+                            <Row><br></br></Row>
+                            <Row><br></br></Row>
+
                         </div>
                     )}
+
                 </Form>
             </Container>
         </>

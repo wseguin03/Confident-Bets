@@ -13,9 +13,16 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
     const router = useRouter();
     const playerURL = router.query.player;
     const team = router.query.team;
-    const [selectedTeam, setSelectedTeam] = useState(null);
+    const [selectedTeam, setSelectedTeam] = useState('');
     const [filteredGameStats, setFilteredGameStats] = useState([]);
-
+    const [playerName, setPlayerName] = useState('');
+    const [opposingTeam, setopposingTeam] = useState('');
+    const [propLine , setPropLine] = useState('');
+    const [betType, setBetType] = useState('');
+    const [propType, setPropType] = useState('');
+    const [selectedStat, setSelectedStat] = useState(null);
+    const [resLength , setResLength] = useState(0);
+    const [resLengthPlayer , setResLengthPlayer] = useState(0);
     const defaultOptions = teams.map(team => ({
         value: team,
         label: team,
@@ -25,39 +32,85 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
         const inputValue = newValue.replace(/\W/g, '');
         return inputValue;
       };
-      const handleSubmit = (event) => {
+      const handleSubmit = async (event) => {
         event.preventDefault();
-    
-        const filteredStats = gameStats.filter(stat => stat.team === selectedTeam);
+            const propLineValue = Number(propLine);
+            const filteredStats = gameStats.filter(stat => {
+                switch (betType) {
+                    case 'over':
+                        return stat.PLAYER == playerName
+                                     &&
+                                     stat.TEAM == selectedTeam 
+                                     &&
+                                     stat.MATCH_UP == opposingTeam 
+                                     &&
+                                     stat[propType] > propLineValue;
+                    case 'under':
+                        return stat.PLAYER == playerName &&
+                                     stat.TEAM == selectedTeam &&
+                                     stat.MATCH_UP == opposingTeam &&
+                                     stat[propType] < propLineValue;
+                    default:
+                        return false;
+                }
+            });
+
         setFilteredGameStats(filteredStats);
-      };
+        setTimeout(() => {
+        console.log(gameStats.slice(0, 10));
+        console.log(playerName)
+        console.log(selectedTeam)
+        console.log(opposingTeam)
+        console.log(propLine)
+        console.log(betType)
+        console.log(propType)
+        console.log("RESULTS" + filteredStats.map(fs => JSON.stringify(fs)).join('\n'));
+        console.log("RESULTS LENGTH"+filteredGameStats.length);
+        }, 1000);
+    };
+
     
       useEffect(() => {
-        // Fetch gameStats here and set it to state
+        if (playerStats?.Tm) {
+          setSelectedTeam(playerStats.Tm);
+        }
+    
+        if (playerStats?.Player) {
+          setPlayerName(playerStats.Player);
+        }
       }, []);
+
+      const handleStatChange = (selectedOption) => {
+        setSelectedStat(selectedOption.value);
+      };
     return (
         <>
             <Navbar />
             <Container>
                 <Row><br></br></Row>
-                <Form>
+                <Form onSubmit={handleSubmit}>
                     <Form.Group className="mb-3">
                         <Form.Label>Team</Form.Label>
-                        <Form.Control type="text" placeholder="Enter team" defaultValue={playerStats?.Tm} />
+                        <Form.Control type="text" placeholder="Enter team" onChange={(e)=>setSelectedTeam(e.target.value)}defaultValue={playerStats?.Tm} />
                     </Form.Group>
 
                     <Form.Group className="mb-3">
                         <Form.Label>Player</Form.Label>
-                        <Form.Control type="text" placeholder="Enter player" defaultValue={playerStats?.Player} />
-                    </Form.Group>
+                        <Form.Control 
+                        type="text" 
+                        placeholder="Enter player" 
+                        onChange={(e) => setPlayerName(e.target.value)} 
+                        defaultValue={playerStats?.Player} 
+                        />                    
+                        </Form.Group>
 
                     <Form.Group className="mb-3">
-                        <Form.Label>Bet Type</Form.Label>
-                        <Form.Select>
-                            <option>Select bet type</option>
-                            <option value="points">Points</option>
-                            <option value="rebounds">Rebounds</option>
-                            <option value="assists">Assists</option>
+                        <Form.Label>Player Prop</Form.Label>
+                        <Form.Select onChange={(e) => setPropType(e.target.value)}>
+                            <option>Select player prop</option>
+                            <option value="PTS">Points</option>
+                            <option value="REB">Rebounds</option>
+                            <option value="AST">Assists</option>
                             <option value="3P">3 Points Made</option>
 
                             {/* Add more options as needed */}
@@ -65,21 +118,28 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
                     </Form.Group>
 
                     <Form.Group className="mb-3">
-            <Form.Label>Team</Form.Label>
-            <Select options={defaultOptions} />
-          </Form.Group>
+            <Form.Label>Opposing Team</Form.Label>
+            <Select 
+                options={defaultOptions}
+                onChange={(selectedOption) => {
+                    if (selectedOption) {
+                        setopposingTeam(selectedOption.value);
+                    } else {
+                        setopposingTeam('');
+                    }
+                }}            />
+            </Form.Group>
 
                     <Form.Group className="mb-3">
                         <Form.Label>Prop Line Bet</Form.Label>
-                        <Form.Control type="number" placeholder="Enter Prop Value" />
+                        <Form.Control type="number" placeholder="Enter Prop Value" onChange={(e) => setPropLine(e.target.value)} />
                     </Form.Group>
                     <Form.Group className="mb-3">
                         <Form.Label>Bet Type</Form.Label>
-                        <Form.Select>
-                            <option>Over/Under/Milestone</option>
+                        <Form.Select onChange={(e) => setBetType(e.target.value)}>
+                            <option>Over/Under</option>
                             <option value="over">Over</option>
                             <option value="under">Under</option>
-                            <option value="milestone">Milestone</option>
                             {}
                         </Form.Select>
                     </Form.Group>
@@ -118,8 +178,13 @@ export async function getServerSideProps(context) {
             YEAR: 2024,
         },
     });
-    const gameStats = await prisma.gameStats.findMany();
+    let gameStats = await prisma.gameStats.findMany();
 
+    // Convert Date objects to strings
+    gameStats = gameStats.map(stat => ({
+      ...stat,
+      GAME_DATE: stat.GAME_DATE.toISOString(),
+    }));
     await prisma.$disconnect();
 
     return {

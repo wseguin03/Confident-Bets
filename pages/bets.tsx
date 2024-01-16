@@ -6,6 +6,7 @@ import { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { prisma } from '@/lib/prisma'
 import Select from 'react-select';
 import { useState, useEffect } from 'react';
+import { count } from 'console'
 
 type Props = InferGetServerSidePropsType<typeof getServerSideProps>
 
@@ -23,6 +24,8 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
     const [selectedStat, setSelectedStat] = useState(null);
     const [resLength , setResLength] = useState(0);
     const [resLengthPlayer , setResLengthPlayer] = useState(0);
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [resLengthPlayerTeam , setResLengthPlayerTeam] = useState(0);
     const defaultOptions = teams.map(team => ({
         value: team,
         label: team,
@@ -32,23 +35,39 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
         const inputValue = newValue.replace(/\W/g, '');
         return inputValue;
       };
+    useEffect(() => {
+        const playerStats = filteredGameStats.filter(stat => stat.PLAYER === playerName);
+        setResLength(playerStats.length);
+        console.log("RESULTS LENGTH"+ resLength);
+    }, [filteredGameStats, playerName]);
+
       const handleSubmit = async (event) => {
+        setIsSubmitted(true);
         event.preventDefault();
+        let count = 0;
+        let teamCount = 0;
             const propLineValue = Number(propLine);
             const filteredStats = gameStats.filter(stat => {
                 switch (betType) {
                     case 'over':
-                        return stat.PLAYER == playerName
-                                     &&
-                                     stat.TEAM == selectedTeam 
-                                     &&
-                                     stat.MATCH_UP == opposingTeam 
-                                     &&
-                                     stat[propType] > propLineValue;
-                    case 'under':
+                        if (stat.PLAYER == playerName) {
+                            count+=1;
+                        }
+                        if(stat.MATCH_UP == opposingTeam && stat.PLAYER == playerName) {
+                            teamCount+=1;
+                        }
                         return stat.PLAYER == playerName &&
                                      stat.TEAM == selectedTeam &&
-                                     stat.MATCH_UP == opposingTeam &&
+                                     (!opposingTeam || stat.MATCH_UP == opposingTeam) &&
+                                     stat[propType] > propLineValue;
+                    case 'under':
+                        if (stat.PLAYER == playerName) {
+                            count+=1;
+
+                        }
+                        return stat.PLAYER == playerName &&
+                                     stat.TEAM == selectedTeam &&
+                                     (!opposingTeam || stat.MATCH_UP == opposingTeam) &&
                                      stat[propType] < propLineValue;
                     default:
                         return false;
@@ -56,7 +75,8 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
             });
 
         setFilteredGameStats(filteredStats);
-        setTimeout(() => {
+        setResLengthPlayer(count);
+        setResLengthPlayerTeam(teamCount);
         console.log(gameStats.slice(0, 10));
         console.log(playerName)
         console.log(selectedTeam)
@@ -65,8 +85,8 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
         console.log(betType)
         console.log(propType)
         console.log("RESULTS" + filteredStats.map(fs => JSON.stringify(fs)).join('\n'));
-        console.log("RESULTS LENGTH"+filteredGameStats.length);
-        }, 1000);
+        console.log("RESULTS LENGTH PLAYER"+ resLengthPlayer);
+
     };
 
     
@@ -144,7 +164,18 @@ export default function Bets({ playerStats, teams, gameStats }: Props) {
                         </Form.Select>
                     </Form.Group>
                     <Button type="submit">Calculate</Button>
+                    <Row><br></br></Row>
+                    {isSubmitted && ( 
+                        <div>
+                            <h2>Results</h2>
 
+                            {opposingTeam !== '' ? (
+                                <p>{playerName} has played {resLengthPlayerTeam} games this season against {opposingTeam} and done this in {resLength} of them ({resLength} / {resLengthPlayerTeam})</p>
+                                ) : (
+                                <p>{playerName} has played {resLengthPlayer} games this season and done this in {resLength} of them ({resLength} / {resLengthPlayer})</p>
+                                )}
+                        </div>
+                    )}
                 </Form>
             </Container>
         </>
